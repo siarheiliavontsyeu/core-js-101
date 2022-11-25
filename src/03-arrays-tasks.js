@@ -35,9 +35,8 @@ function findElement(arr, value) {
  *    5 => [ 1, 3, 5, 7, 9 ]
  */
 function generateOdds(len) {
-  return Array.from({ length: len * 2 }, (_, i) => i + 1).filter(
-    (x) => x % 2 !== 0
-  );
+  const arr = Array.from({ length: len * 2 }, (_, i) => i + 1);
+  return arr.filter((x) => x % 2 !== 0);
 }
 
 /**
@@ -469,13 +468,12 @@ function sortCitiesArray(arr) {
  *           [0,0,0,0,1]]
  */
 function getIdentityMatrix(n) {
-  return Array.from(Array(n), () => Array.from(Array(n), () => 0)).map(
-    (el, index) => {
-      const elem = el;
-      elem[index] = 1;
-      return elem;
-    }
-  );
+  const arrayNZero = Array.from(Array(n), () => Array.from(Array(n), () => 0));
+  return arrayNZero.map((el, index) => {
+    const elem = el;
+    elem[index] = 1;
+    return elem;
+  });
 }
 
 /**
