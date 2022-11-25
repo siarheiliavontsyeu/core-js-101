@@ -6,7 +6,6 @@
  *                                                                                                *
  ************************************************************************************************ */
 
-
 /**
  * Returns the rectangle object with width and height parameters and getArea() method
  *
@@ -20,10 +19,15 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(/* width, height */) {
-  throw new Error('Not implemented');
+function Rectangle(width, height) {
+  return {
+    width,
+    height,
+    getArea() {
+      return this.width * this.height;
+    },
+  };
 }
-
 
 /**
  * Returns the JSON representation of specified object
@@ -35,10 +39,9 @@ function Rectangle(/* width, height */) {
  *    [1,2,3]   =>  '[1,2,3]'
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
-function getJSON(/* obj */) {
-  throw new Error('Not implemented');
+function getJSON(obj) {
+  return JSON.stringify(obj);
 }
-
 
 /**
  * Returns the object of specified type from JSON representation
@@ -51,10 +54,11 @@ function getJSON(/* obj */) {
  *    const r = fromJSON(Circle.prototype, '{"radius":10}');
  *
  */
-function fromJSON(/* proto, json */) {
-  throw new Error('Not implemented');
+function fromJSON(proto, json) {
+  const obj = { ...JSON.parse(json) };
+  Object.setPrototypeOf(obj, proto);
+  return obj;
 }
-
 
 /**
  * Css selectors builder
@@ -110,36 +114,88 @@ function fromJSON(/* proto, json */) {
  *  For more examples see unit tests.
  */
 
+/* eslint-disable operator-linebreak */
+class CSS {
+  constructor(value, selector) {
+    this.value = value;
+    this.selector = selector;
+  }
+}
+
+const orderMsg =
+  'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element';
+const occurMsg =
+  'Element, id and pseudo-element should not occur more then one time inside the selector';
+
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  element(value) {
+    if (this.selector === this.element.name) {
+      throw new Error(occurMsg);
+    }
+    if (this.selector) {
+      throw new Error(orderMsg);
+    }
+
+    return new CSS(value, this.element.name);
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    if (this.selector === this.id.name) {
+      throw new Error(occurMsg);
+    }
+
+    if (
+      ['class', 'attr', 'pseudoClass', 'pseudoElement'].includes(this.selector)
+    ) {
+      throw new Error(orderMsg);
+    }
+
+    const newVal = this.value ? `${this.value}#${value}` : `#${value}`;
+    return new CSS(newVal, this.id.name);
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    if (['attr', 'pseudoClass', 'pseudoElement'].includes(this.selector)) {
+      throw new Error(orderMsg);
+    }
+    const newVal = this.value ? `${this.value}.${value}` : `.${value}`;
+    return new CSS(newVal, this.class.name);
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    if (['pseudoClass', 'pseudoElement'].includes(this.selector)) {
+      throw new Error(orderMsg);
+    }
+    const newVal = this.value ? `${this.value}[${value}]` : `[${value}]`;
+    return new CSS(newVal, this.attr.name);
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    if (['pseudoElement'].includes(this.selector)) {
+      throw new Error(orderMsg);
+    }
+    const newVal = this.value ? `${this.value}:${value}` : `:${value}`;
+    return new CSS(newVal, this.pseudoClass.name);
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    if (['pseudoElement'].includes(this.selector)) {
+      throw new Error(occurMsg);
+    }
+    const newVal = this.value ? `${this.value}::${value}` : `::${value}`;
+    return new CSS(newVal, this.pseudoElement.name);
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    const combineValue = `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
+    return new CSS(combineValue, this.combine.name);
+  },
+  stringify() {
+    return this.value;
   },
 };
 
+Object.setPrototypeOf(CSS.prototype, cssSelectorBuilder);
 
 module.exports = {
   Rectangle,
